@@ -1438,37 +1438,26 @@ select.wizard-input{appearance:none;-webkit-appearance:none}
 
 <script>
 // ============================================================
-// GITHUB STORAGE CONFIG
+<script>
 // ============================================================
-var GH_TOKEN  = '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';
-var GH_OWNER  = 'MohdGems2050';
-var GH_REPO   = 'school-platform-data';
-var GH_BRANCH = 'main';
-var _ghSHAs   = {};
-
-async function ghRead(filename){
-  try{
-    var controller=new AbortController();
-    var tid=setTimeout(function(){controller.abort();},4000);
-    var r=await fetch('https://api.github.com/repos/'+GH_OWNER+'/'+GH_REPO+'/contents/'+filename+'?ref='+GH_BRANCH+'&t='+Date.now(),{headers:{'Authorization':'token '+GH_TOKEN,'Accept':'application/vnd.github.v3+json'},signal:controller.signal});
-    clearTimeout(tid);
-    if(!r.ok) return null;
-    var j=await r.json();
-    _ghSHAs[filename]=j.sha;
-    return JSON.parse(atob(j.content.replace(/\n/g,'')));
-  }catch(e){return null;}
+// STORAGE CONFIG (Local Storage - آمن وسريع)
+// ============================================================
+async function ghRead(filename) {
+    try {
+        const data = localStorage.getItem(filename);
+        return data ? JSON.parse(data) : []; 
+    } catch (e) {
+        return [];
+    }
 }
 
-async function ghWrite(filename,data){
-  try{
-    var content=btoa(unescape(encodeURIComponent(JSON.stringify(data,null,2))));
-    var body={message:'update '+filename,content:content,branch:GH_BRANCH};
-    if(_ghSHAs[filename]) body.sha=_ghSHAs[filename];
-    var r=await fetch('https://api.github.com/repos/'+GH_OWNER+'/'+GH_REPO+'/contents/'+filename,{method:'PUT',headers:{'Authorization':'token '+GH_TOKEN,'Accept':'application/vnd.github.v3+json','Content-Type':'application/json'},body:JSON.stringify(body)});
-    var j=await r.json();
-    if(j.content) _ghSHAs[filename]=j.content.sha;
-    return r.ok;
-  }catch(e){return false;}
+async function ghWrite(filename, data) {
+    try {
+        localStorage.setItem(filename, JSON.stringify(data, null, 2));
+        return true;
+    } catch (e) {
+        return false;
+    }
 }
 
 // ============================================================
